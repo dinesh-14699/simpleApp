@@ -14,5 +14,5 @@ func main() {
 		})
 	})
 
-	http.ListenAndServe("0.0.0.0:80", nil)
+	router.Run(":80") 
 }
