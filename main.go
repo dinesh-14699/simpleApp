@@ -2,17 +2,26 @@ package main
 
 import (
 	"net/http"
-	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+)
+
+var requestCounter = prometheus.NewCounter(
+	prometheus.CounterOpts{
+		Name: "http_requests_total",
+		Help: "Total number of HTTP requests.",
+	},
 )
 
 func main() {
-	router := gin.Default()
+	prometheus.MustRegister(requestCounter)
 
-	router.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "Hello, Gin in Docker!",
-		})
+	http.Handle("/metrics", promhttp.Handler())
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		requestCounter.Inc()
+		w.Write([]byte("Hello, Prometheus!"))
 	})
 
-	router.Run(":8080") 
+	http.ListenAndServe(":8080", nil)
 }
